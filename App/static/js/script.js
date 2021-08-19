@@ -50,11 +50,12 @@ window.onload = () => {
 					console.log(data.getAllResponseHeaders());
 				},
 				success: function(data){
-                    nr_people = data['status']  // get the number of people detected
+                    nr_images = data['status']  // get the number of images received 
                     document.getElementById('container1').insertAdjacentHTML('beforeend', 
-                    '<p id="peopleCount" style="color: white; text-align: center; font-size: 1.5rem">' + nr_people + ' people detected:</p>')
-                    for (let i=0; i<nr_people; i++){
-                        key = 'person_' + i
+                    '<p id="peopleCount" style="color: white; text-align: center; font-size: 1.5rem">' + nr_images/2 + ' people detected:</p>')
+                    // nr_images / 2 because each person has a raw and modified image
+                    for (let i=0; i<nr_images; i++){
+                        key = 'image_' + i
                         bytestring = data[key]
                         image = bytestring.split('\'')[1]
                         //hardcode below:

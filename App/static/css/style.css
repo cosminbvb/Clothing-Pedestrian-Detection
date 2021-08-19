@@ -47,8 +47,10 @@
     position: relative;
 }
 
+
 body {
     min-height: 100vh;
     background-color: #657399;
     background-image: linear-gradient(147deg, #07395a 0%, #868fa1 100%);
 }
+

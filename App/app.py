@@ -1,6 +1,7 @@
 import os
 import io
 import base64
+import copy
 
 # app imports
 from flask import Flask, redirect, url_for, render_template, request, flash, jsonify
@@ -13,6 +14,13 @@ from PIL import Image
 import torchvision
 import torchvision.transforms as T
 import cv2
+
+from detectron2 import model_zoo
+from detectron2.engine import DefaultPredictor
+from detectron2.config import get_cfg
+from detectron2.utils.visualizer import Visualizer
+from detectron2.utils.visualizer import ColorMode
+from detectron2.data import DatasetCatalog, MetadataCatalog
 
 UPLOAD_FOLDER = 'static/storage_testing'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -48,17 +56,21 @@ def home():
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # convert
 
             people = detect_people(img)
-            detect_clothing(people)  # IN PROGRESS
+            people_copy = copy.deepcopy(people)
+            clothing_per_person = detect_clothing_detectron2(people_copy)
+
+            result_images = people + clothing_per_person
 
             return_dict = {}
-            return_dict['status'] = len(people)  # nr of people detected 
-            for i, person in enumerate(people):
-                img = Image.fromarray(person.astype('uint8'))
+            return_dict['status'] = len(result_images)  # nr of images to send 
+            for i, image in enumerate(result_images):
+                img = Image.fromarray(image.astype('uint8')).convert('RGB')
+                img.save(os.path.join(app.config['UPLOAD_FOLDER'], f'person_pil_{i}.jpg'))
                 rawBytes = io.BytesIO()
                 img.save(rawBytes, "JPEG")
                 rawBytes.seek(0)
                 img_base64 = base64.b64encode(rawBytes.read())
-                return_dict[f'person_{i}'] = str(img_base64)
+                return_dict[f'image_{i}'] = str(img_base64)
             return jsonify(return_dict)
         else:
             flash('Allowed image types are - png, jpg, jpeg')
@@ -113,7 +125,7 @@ def detect_people(image):
     return people
 
 
-def detect_clothing(people):
+def detect_clothing_yolo(people):
     imgs = []
     for person in people:
         imgs.append(Image.fromarray(person.astype('uint8')))
@@ -124,10 +136,29 @@ def detect_clothing(people):
     print(results.pandas().xyxy[0])
 
 
+def detect_clothing_detectron2(people):
+    output_images = []
+    cfg = get_cfg()
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 13
+    cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
+    cfg.MODEL.WEIGHTS = '../Clothing Detection and Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/model_final.pth'  
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.65  # set a custom testing threshold
+    predictor = DefaultPredictor(cfg)
+    my_dataset_val_metadata = MetadataCatalog.get("DeepFashion2_valid")
+    for i, person in enumerate(people):
+        outputs = predictor(person)  # format is documented at https://detectron2.readthedocs.io/tutorials/models.html#model-output-format
+        v = Visualizer(person[:, :, ::-1],
+                    metadata=my_dataset_val_metadata, 
+                    scale=1, 
+                    instance_mode=ColorMode.IMAGE_BW   # remove the colors of unsegmented pixels. This option is only available for segmentation models
+        )
+        out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        output_image = cv2.cvtColor(out.get_image(), cv2.COLOR_BGR2RGB)
+        cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'person_{i}.jpg'), output_image)
+        output_images.append(output_image)
+    return output_images
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
-
-# TODO
-# fix the flash messages
-# dupa ce se da click pe detect, imaginea selectata sa nu dispara
