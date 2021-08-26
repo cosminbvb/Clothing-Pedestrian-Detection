@@ -141,10 +141,12 @@ def train():
     for epoch in range(num_epochs):
         logs = train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=100)
         
-        # evaluate on the validation dataset
-        # get_metrics() is a method I added inside in tools.coco_eval 
-        metrics = evaluate(model, dataLoader_valid, device=device).get_metrics()
-        
+        # evaluate on the validation dataset and get the stats 
+        evaluator = evaluate(model, dataLoader_valid, device=device)
+        for iou_type, coco_eval in evaluator.coco_eval.items():
+            if iou_type == 'bbox':
+                metrics = coco_eval.stats
+
         log_writer.add_scalar("loss", logs.loss.value, epoch)  # logging the loss function
         log_writer.add_scalar("lr", logs.lr.value, epoch)  # and the learning rate
         log_writer.add_scalar("AP(IoU=0.50:0.95 | area=   all | maxDets=100)", metrics[0].round(3), epoch)

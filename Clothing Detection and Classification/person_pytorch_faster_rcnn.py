@@ -156,7 +156,7 @@ def inference(model_path, dataset_valid):
         boxes = boxes.tolist()
         scores = scores.tolist()
 
-        # TODO: confidence threshold
+        threshold = 0.6
 
         image = image.permute(1,2,0)
         image = image.numpy()
@@ -164,6 +164,8 @@ def inference(model_path, dataset_valid):
         fig, ax = plt.subplots(1)
         ax.imshow(image)
         for i in keep:
+            if scores[i] < threshold:
+                continue
             x1, y1, x2, y2 = map(int, boxes[i])
             rect = patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=1,
                             edgecolor='r', facecolor="none")
@@ -196,7 +198,7 @@ def train(dataLoader_train, dataLoader_valid):
 
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.01)
+    optimizer = torch.optim.SGD(params, lr=0.005)
 
     # and a learning rate scheduler
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
@@ -212,12 +214,14 @@ def train(dataLoader_train, dataLoader_valid):
         logs = train_one_epoch(model, optimizer, dataLoader_train, device, epoch, print_freq=100)
         
         # update the learning rate
-        lr_scheduler.step()
+        # lr_scheduler.step()
 
-        # evaluate on the validation dataset
-        # get_metrics() is a method I added inside in tools.coco_eval 
-        metrics = evaluate(model, dataLoader_valid, device=device).get_metrics()
-        
+        # evaluate on the validation dataset and get the stats 
+        evaluator = evaluate(model, dataLoader_valid, device=device)
+        for iou_type, coco_eval in evaluator.coco_eval.items():
+            if iou_type == 'bbox':
+                metrics = coco_eval.stats
+
         log_writer.add_scalar("loss", logs.loss.value, epoch)  # logging the loss function
         log_writer.add_scalar("lr", logs.lr.value, epoch)  # and the learning rate
         log_writer.add_scalar("AP(IoU=0.50:0.95 | area=   all | maxDets=100)", metrics[0].round(3), epoch)
@@ -229,13 +233,20 @@ def train(dataLoader_train, dataLoader_valid):
 
         # save every 50 epochs
         if epoch % 50 == 0 and epoch != 0:
-            torch.save(model, f"SavedRuns/PersonDetection/pytorch_faster_rcnn/{epoch}_2.pt")
+            torch.save(model, f"SavedRuns/PersonDetection/pytorch_faster_rcnn/{epoch}_4.pt")
 
 
     log_writer.flush()
     log_writer.close()
 
-    torch.save(model, "SavedRuns/PersonDetection/pytorch_faster_rcnn/trained.pt")
+    torch.save(model, "SavedRuns/PersonDetection/pytorch_faster_rcnn/trained_4.pt")
+
+
+def eval(model_path, dataLoader_valid):
+    device = torch.device('cuda')
+    model = torch.load(model_path)
+    model.to(device)
+    evaluate(model, dataLoader_valid, device=device)
 
 
 if __name__ == "__main__":
@@ -258,9 +269,14 @@ if __name__ == "__main__":
     dataset_train, dataset_valid = get_dataset("PennFudanPed")
     dataLoader_train, dataLoader_valid = get_dataLoaders(dataset_train, dataset_valid)
 
-    # train:
+    # train (and eval):
     # train(dataLoader_train, dataLoader_valid)
-    
+
+    # saved model path
+    model_path = 'SavedRuns/PersonDetection/pytorch_faster_rcnn/50_3.pt'
+
+    # only eval:
+    eval(model_path, dataLoader_valid)
+
     # inference:
-    model_path = 'SavedRuns/PersonDetection/pytorch_faster_rcnn/50_0.pt'
-    inference(model_path, dataset_valid)
+    # inference(model_path, dataset_valid)

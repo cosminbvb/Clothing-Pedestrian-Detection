@@ -15,12 +15,12 @@ import torchvision
 import torchvision.transforms as T
 import cv2
 
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
-from detectron2.utils.visualizer import Visualizer
-from detectron2.utils.visualizer import ColorMode
-from detectron2.data import DatasetCatalog, MetadataCatalog
+# from detectron2 import model_zoo
+# from detectron2.engine import DefaultPredictor
+# from detectron2.config import get_cfg
+# from detectron2.utils.visualizer import Visualizer
+# from detectron2.utils.visualizer import ColorMode
+# from detectron2.data import DatasetCatalog, MetadataCatalog
 
 UPLOAD_FOLDER = 'static/storage_testing'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -55,17 +55,23 @@ def home():
             img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)  # BGR
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # convert
 
-            people = detect_people(img)
+            people = detect_people(img)  # people is now an array of cv2 images, each one containing 1 detected person
             people_copy = copy.deepcopy(people)
-            clothing_per_person = detect_clothing_detectron2(people_copy)
 
-            result_images = people + clothing_per_person
+            # clothing = detect_clothing_detectron2(people_copy)  # detectron2 instance segmentation
+            if len(people) > 0:
+                clothing = detect_clothing_yolo(people_copy)  # yolov5 object detection
+            else:
+                clothing = []
+            # clothing is now an array of cv2 images, each one showing the clothing items for each person
+
+            result_images = people + clothing
 
             return_dict = {}
             return_dict['status'] = len(result_images)  # nr of images to send 
             for i, image in enumerate(result_images):
                 img = Image.fromarray(image.astype('uint8')).convert('RGB')
-                img.save(os.path.join(app.config['UPLOAD_FOLDER'], f'person_pil_{i}.jpg'))
+                # img.save(os.path.join(app.config['UPLOAD_FOLDER'], f'person_pil_{i}.jpg'))
                 rawBytes = io.BytesIO()
                 img.save(rawBytes, "JPEG")
                 rawBytes.seek(0)
@@ -82,7 +88,7 @@ def home():
 def detect_people(image):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    image_copy = image.copy()  # used later while for crop
+    image_copy = image.copy()  # used later while cropping
 
     preprocess = T.Compose([
         # T.Resize(some value),
@@ -91,20 +97,21 @@ def detect_people(image):
 
     image = preprocess(image)
     
-    model = torch.load('../Clothing Detection and Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/50_0.pt')
+    model = torch.load('../Clothing Detection and Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/100epochs.pt')
     model.to(device)
     model.eval()
     with torch.no_grad():
         prediction = model([image.to(device)])
     boxes = prediction[0]["boxes"]
     scores = prediction[0]["scores"]
-    keep = torchvision.ops.nms(boxes, scores, 0.2) 
+    keep = torchvision.ops.nms(boxes, scores, 0.5) 
     boxes = boxes.tolist()
     scores = scores.tolist()
     
-    threshold = 0.5
+    threshold = 0.6
     final_boxes = []
     final_scores = []
+
     people = []
     for i in keep:
         if scores[i] < threshold:
@@ -113,28 +120,28 @@ def detect_people(image):
             final_boxes.append(boxes[i])
             final_scores.append(scores[i])
             x1, y1, x2, y2 = map(int, boxes[i])
-            people.append(image_copy[y1:y2, x1:x2].copy())
-
-    # # for testing    
-    # for i, img in enumerate(people):
-    #     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], f'person_{i}.jpg'), 
-    #                 cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-    # at this point we detected the people in the image
+            cropped = image_copy[y1:y2, x1:x2]
+            people.append(cropped)
     
+    print(final_boxes)
+    print(final_scores)
+
     return people
 
 
 def detect_clothing_yolo(people):
     imgs = []
     for person in people:
-        imgs.append(Image.fromarray(person.astype('uint8')))
-        Image.fromarray(person.astype('uint8'))
+        # decided to add padding because the labels drawn by yolo usually don't fit into the image
+        padded = cv2.copyMakeBorder(person, top=0, bottom=0, left=0, right=250,
+                                    borderType=cv2.BORDER_CONSTANT, value=[16, 21, 24])
+        imgs.append(Image.fromarray(padded.astype('uint8')))
     model = torch.hub.load('ultralytics/yolov5', 'custom', path='../Clothing Detection and Classification/SavedRuns/ClothingDetection/yolov5/weights/best.pt')  # create model
-    # model.conf = 0.65  # confidence threshold (0-1)
+    model.conf = 0.6  # confidence threshold (0-1)
     results = model(imgs, size=640)
-    print(results.pandas().xyxy[0])
-
+    results.render()
+    return results.imgs
+    
 
 def detect_clothing_detectron2(people):
     output_images = []

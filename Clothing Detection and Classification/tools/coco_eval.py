@@ -59,11 +59,6 @@ class CocoEvaluator(object):
             print("IoU metric: {}".format(iou_type))
             coco_eval.summarize()
 
-    # created this method so I can get a hand on the metrics after calling evaluate (from tools.engine)
-    def get_metrics(self):
-        for iou_type, coco_eval in self.coco_eval.items():
-            return coco_eval.stats
-
     def prepare(self, predictions, iou_type):
         if iou_type == "bbox":
             return self.prepare_for_coco_detection(predictions)

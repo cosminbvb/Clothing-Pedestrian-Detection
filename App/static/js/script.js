@@ -50,20 +50,23 @@ window.onload = () => {
 					console.log(data.getAllResponseHeaders());
 				},
 				success: function(data){
-                    nr_images = data['status']  // get the number of images received 
-                    document.getElementById('container1').insertAdjacentHTML('beforeend', 
-                    '<p id="peopleCount" style="color: white; text-align: center; font-size: 1.5rem">' + nr_images/2 + ' people detected:</p>')
-                    // nr_images / 2 because each person has a raw and modified image
-                    for (let i=0; i<nr_images; i++){
+                    nr_images = data['status']  // get the number of images received  
+                    // document.getElementById('container1').insertAdjacentHTML('beforeend', 
+                    // `<p id="resultP" style="color: white; text-align: left; font-size: 1.5rem">${nr_images} results:</p>`)
+                    for (let i=0; i<nr_images/2; i++){
                         key = 'image_' + i
                         bytestring = data[key]
-                        image = bytestring.split('\'')[1]
-                        //hardcode below:
-                        //change asap
-                        div = '<div class="image-area mt-4 imgResultContainer"><img id="imageResult" src="#" alt="" class="img-fluid rounded shadow-sm mx-auto d-block"></div>'
-                        div = div.replace("imageResult", "imageResult" + (i+1))
+                        image_original = bytestring.split('\'')[1]
+                        
+                        key = 'image_' + (nr_images/2+i)
+                        bytestring = data[key]
+                        image_final = bytestring.split('\'')[1]
+                        
+                        // not the cleanest thing but we move:
+                        div = `<div class="imgResultContainer"><div style="display: inline-block;"><img id="imageResult${i*2+1}" src="#" alt="" class="img-fluid rounded shadow-sm mx-auto d-block"></div><div style="display: inline-block;"><img src="static/assets/arrow.png" alt="" class="img-fluid rounded shadow-sm mx-auto d-block" style="max-width: 20%;max-height: 20%"></div><div style="display: inline-block;"><img id="imageResult${i*2+2}" src="#" alt="" class="img-fluid rounded shadow-sm mx-auto d-block"></div></div>`
                         document.getElementById('container1').insertAdjacentHTML('beforeend', div)
-                        $('#imageResult' + (i+1)).attr('src' , 'data:image/jpg;base64,'+image)
+                        $('#imageResult' + (i*2+1)).attr('src' , 'data:image/jpg;base64,' + image_original)
+                        $('#imageResult' + (i*2+2)).attr('src' , 'data:image/jpg;base64,' + image_final)
                     }
                     $('#submit').prop('disabled', false);  // activating the submit button
                     $('#submit').html('Detect');   // changing its text
@@ -75,5 +78,5 @@ window.onload = () => {
 
 function clearPrevious(){
     $('div.imgResultContainer').remove();  // removing all the image result containers
-    $('#peopleCount').remove()  // and the person count message
+    // $('#resultP').remove()  // and the person count message
 }
