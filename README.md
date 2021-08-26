@@ -66,15 +66,20 @@ Finally, I started training for 100 epochs with a batch size of 64 using the fol
 Now, let's take a look at how the model performed:
 
 Results summary:
+
 ![Results](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/results.png?raw=true)
+Precision is defined as the number of true positives over the number of true positives plus the number of false positives.
+Recall is defined as the number of true positives over the number of true positives plus the number of false negatives.
 
 Confusion matrix:
 ![Conf matrix](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/confusion_matrix.png?raw=true)
 
 Precision-Recall curve:
+The precision-recall curve shows the tradeoff between precision and recall. A high area under the curve represents both high recall and high precision, where high precision relates to a low false positive rate, and high recall relates to a low false negative rate. High scores for both show that the classifier is returning accurate results (high precision), as well as returning a majority of all positive results (high recall).
 ![PR curve](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/PR_curve.png?raw=true)
 
 F1 curve:
+Simply put, the F1 score combines precision and recall into one metric by calculating the harmonic mean between those two.
 ![F1 curve](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/F1_curve.png?raw=true)
 
 The saved model can be found [here](https://github.com/cosminbvb/Clothing-Recognition/tree/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/weights).
@@ -96,7 +101,7 @@ Here is how the model performed while training:
 
 Even though the above metrics look promising, while evaluating, we get the following results:
 
-BBOX Evaluation:
+Bbox Evaluation:
 ```
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.602
  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.746
@@ -146,7 +151,9 @@ We want to start from a model pre-trained on COCO and finetune it for our partic
 
 Finally, we can train for how many epochs we want to, by using the ```train_one_epoch``` and ```evaluate``` methods provided in ```tools/eninge.py```. With a few extra lines of code, we are also able to log the loss function, learning rate and the COCO evaluation metrics.  
 
-Due to the lack of time and computing resources, this approach has only been trained for 6 epochs and only achieved an AP(IoU=0.50) of 0.70 and an AR(IoU=0.50:0.95) of 0.723.
+When performing inference, we should not only set an adequate threshold, but also use Non-Max Suppression, and torchvision provides a plug-and-play function to perform this type of filtering. NMS is well explained [here](https://www.analyticsvidhya.com/blog/2020/08/selecting-the-right-bounding-box-using-non-max-suppression-with-implementation/).
+
+Due to the lack of time and computing resources, this approach has only been trained for 6 epochs and only achieved an AP(IoU=0.50) of 0.70 and an AR(IoU=0.50:0.95) of 0.723, but could reach much better performance given a fair amount of time and resources.
 
 <a name="person-detection"/>
 
