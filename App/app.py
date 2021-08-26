@@ -1,3 +1,4 @@
+import sys
 import os
 import io
 import base64
@@ -87,7 +88,6 @@ def home():
 
 def detect_people(image):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     image_copy = image.copy()  # used later while cropping
 
     preprocess = T.Compose([
@@ -96,10 +96,12 @@ def detect_people(image):
     ])
 
     image = preprocess(image)
-    
+
     model = torch.load('../Clothing Detection and Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/100epochs.pt')
+    
     model.to(device)
     model.eval()
+   
     with torch.no_grad():
         prediction = model([image.to(device)])
     boxes = prediction[0]["boxes"]
@@ -168,5 +170,5 @@ def detect_clothing_detectron2(people):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
 

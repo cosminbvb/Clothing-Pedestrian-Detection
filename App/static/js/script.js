@@ -39,7 +39,7 @@ window.onload = () => {
 			let formData = new FormData();
 			formData.append('image' , input.files[0]);
 			$.ajax({
-				url: "http://127.0.0.1:5000/",
+				url: "http://localhost:8080/",
 				type:"POST",
 				data: formData,
 				cache: false,
