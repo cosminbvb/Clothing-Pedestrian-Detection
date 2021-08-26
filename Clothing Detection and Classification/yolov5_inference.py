@@ -3,7 +3,8 @@ import torch
 
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='SavedRuns/ClothingDetection/yolov5/weights/best.pt')  # create model
 
-model.conf = 0.65  # confidence threshold (0-1)
+model.iou = 0.40  # NMS IoU threshold (0-1)
+model.conf = 0.60  # confidence threshold (0-1)
 
 imgs = []
 for i in range(1, 9):

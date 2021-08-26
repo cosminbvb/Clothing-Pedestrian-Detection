@@ -138,6 +138,7 @@ def detect_clothing_yolo(people):
         imgs.append(Image.fromarray(padded.astype('uint8')))
     model = torch.hub.load('ultralytics/yolov5', 'custom', path='../Clothing Detection and Classification/SavedRuns/ClothingDetection/yolov5/weights/best.pt')  # create model
     model.conf = 0.6  # confidence threshold (0-1)
+    model.iou = 0.4  # NMS IoU threshold (0-1)
     results = model(imgs, size=640)
     results.render()
     return results.imgs
