@@ -2,17 +2,17 @@
 
 This repository combines the following tasks into a fully working Clothing Recognition app:
 * [Deployment with Flask](#deployment)
-* [Clothing recognition](#clothing-recognition)
+* Clothing detection
   * [Dataset](#ds1)
   * [YOLOv5](#ap1)
   * [Mask RCNN with Detectron2](#ap2)
   * [Faster RCNN with PyTorch](#ap3)
 * [Person detection](#person-detection)
-
+ 
 <a name="deployment"/>
 
 ## Deployment with Flask
-
+![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/demo.gif)
 
 
 <a name="clothing-recognition"/>
@@ -77,11 +77,30 @@ Precision-Recall curve:
 F1 curve:
 ![F1 curve](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/F1_curve.png?raw=true)
 
+The saved model can be found [here](https://github.com/cosminbvb/Clothing-Recognition/tree/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/weights).
 
+<a name="ap2"/>
 
+### Instance Segmentation (Mask RCNN) with Detectron2
 
+First of all, in order to train on a custom dataset, we'll need to register the dataset. The easiest way to do so, in my opinion, is to [convert the dataset into **coco** format](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_coco.py) and then just run the ```register_coco_instances``` function they provide, passing the json and images directory paths as arguments.
+
+Next, we need to define the configuration. Here, I chose the mask_rcnn_R_101_FPN_3x model configuration, 16 images per batch, 0.001 learning rate and 30k max interations.
+
+Here is how the model performed:
+
+![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/fast_rcnn_accuracy.png)
+![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/mask_rcnn_accuracy.png)
+![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_mask.png)
+![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_cls.png)
 <a name="person-detection"/>
 
 ## Person Detection
 
+### Dataset
+The dataset I used for this task is the Penn-Fudan Database for Pedestrian Detection and Segmentation, which you can read more about [here](https://www.cis.upenn.edu/~jshi/ped_html/). The dataset is very small and better performance could be achived using broader datasets, but the main focus of the project was the clothing detection task.
 
+
+### Metrics:
+![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/ap.png)
+![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/loss_lr.png)
