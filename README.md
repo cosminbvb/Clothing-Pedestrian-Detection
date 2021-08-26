@@ -1,14 +1,31 @@
-# Clothing Recognition
+# Clothing & Person Detection
 
 This repo focuses on the Clothing Detection task. However, I also chose to quickly train a Person Detection model and when performing inference pass each detected person to the Clothing Detection model. But, depending on the data used for inference, better speed/performance could be achived by directly passing the original images to the Clothing Detection model.
+
+* [Docker](#docker)
 * [Deployment with Flask](#deployment)
-* Clothing detection
+* Clothing Detection
   * [Dataset](#ds1)
   * [YOLOv5](#ap1)
   * [Mask RCNN with Detectron2](#ap2)
   * [Faster RCNN with PyTorch](#ap3)
-* [Person detection](#person-detection)
- 
+* [Person Detection](#person-detection)
+
+
+<a name="docker"/>
+
+## Docker
+Requirements:
+- GNU/Linux x86_64 with kernel version > 3.10
+- Docker >= 19.03
+- docker-compose >= 1.28.0
+- NVIDIA GPU with Architecture >= Kepler (or compute capability 3.0)
+- NVIDIA Linux drivers >= 418.81.07 (Note that older driver releases or branches are unsupported.)
+- [NVIDIA Container Toolkit and nvidia-docker2](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+
+Then, just run ``` sudo docker-compose up -d --build ``` and go to ```localhost:8080``` in your browser.
+
+
 <a name="deployment"/>
 
 ## Deployment with Flask
@@ -17,7 +34,7 @@ This repo focuses on the Clothing Detection task. However, I also chose to quick
 
 <a name="clothing-recognition"/>
 
-## Clothing Recognition
+## Clothing Detection
 
 ***Disclaimer*** - This is not a fair comparison between the 3 approaches. Since the dataset is really big, a lot of time and resources 
 would be required to reach convergence and find the best hyperparameters on each one of them.
