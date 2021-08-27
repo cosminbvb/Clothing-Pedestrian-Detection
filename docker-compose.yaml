@@ -6,7 +6,7 @@ services:
     build: ./Docker  # path to the Dockerfile (context)
     restart: unless-stopped
     ports: 
-      - 8080:5000  # port mapping (5000 = default flask development port)
+      - 5000:5000  # port mapping (5000 = default flask development port)
     volumes:  # directory mapping
       - ./App:/App
       - ./Clothing Detection and Classification/SavedRuns/:/Clothing Detection and Classification/SavedRuns/

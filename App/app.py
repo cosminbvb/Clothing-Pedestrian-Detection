@@ -78,6 +78,8 @@ def home():
                 rawBytes.seek(0)
                 img_base64 = base64.b64encode(rawBytes.read())
                 return_dict[f'image_{i}'] = str(img_base64)
+            print("----------")
+            print(return_dict['status'])
             return jsonify(return_dict)
         else:
             flash('Allowed image types are - png, jpg, jpeg')

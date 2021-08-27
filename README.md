@@ -2,8 +2,9 @@
 
 This repo focuses on the Clothing Detection task. However, I also chose to quickly train a Person Detection model and when performing inference pass each detected person to the Clothing Detection model. But, depending on the data used for inference, better speed/performance could be achived by directly passing the original images to the Clothing Detection model.
 
-* [Docker](#docker)
-* [Deployment with Flask](#deployment)
+![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/demo.gif)
+
+* [Run with or without Docker](#run)
 * Clothing Detection
   * [Dataset](#ds1)
   * [YOLOv5](#ap1)
@@ -12,9 +13,12 @@ This repo focuses on the Clothing Detection task. However, I also chose to quick
 * [Person Detection](#person-detection)
 
 
-<a name="docker"/>
+<a name="run"/>
 
-## Docker
+## Run with or without Docker
+
+### Running the flask app with Docker (recommended): 
+
 Requirements:
 - GNU/Linux x86_64 with kernel version > 3.10
 - Docker >= 19.03
@@ -23,13 +27,18 @@ Requirements:
 - NVIDIA Linux drivers >= 418.81.07 (Note that older driver releases or branches are unsupported.)
 - [NVIDIA Container Toolkit and nvidia-docker2](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
 
-Then, just run ``` sudo docker-compose up -d --build ``` and go to ```localhost:8080``` in your browser.
+Then, just run ``` sudo docker-compose up -d --build ``` and go to ```127.0.0.1:5000``` in your browser.
+To stop it, run ``` sudo docker-compose down ```.
 
+### Running the flask up without Docker:
 
-<a name="deployment"/>
-
-## Deployment with Flask
-![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/demo.gif)
+It is highly recommended to create a virtual environment and install these [packages](https://github.com/ultralytics/yolov5/blob/master/requirements.txt). 
+Then, change directory to App, run the following commands:
+```
+export FLASK_APP=app
+flask run
+```
+and go to ```127.0.0.1:5000``` in your browser.
 
 
 <a name="clothing-recognition"/>
