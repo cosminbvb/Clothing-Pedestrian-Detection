@@ -30,7 +30,7 @@ Requirements:
 Then, just run ``` sudo docker-compose up -d --build ``` and go to ```127.0.0.1:5000``` in your browser.
 To stop it, run ``` sudo docker-compose down ```.
 
-### Running the flask up without Docker:
+### Running the flask app without Docker:
 
 It is highly recommended to create a virtual environment and install these [packages](https://github.com/ultralytics/yolov5/blob/master/requirements.txt). 
 Then, change directory to App, run the following commands:
