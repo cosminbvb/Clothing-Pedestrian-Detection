@@ -1,8 +1,8 @@
 # Clothing & Person Detection
 
-This repo focuses on the Clothing Detection task. However, I also chose to quickly train a Person Detection model and when performing inference pass each detected person to the Clothing Detection model. But, depending on the data used for inference, better speed/performance could be achived by directly passing the original images to the Clothing Detection model.
+This repo focuses on the Clothing Detection task. However, I also chose to quickly train a Person Detection model (with a Pedestrian Detection dataset) and when performing inference pass each detected person to the Clothing Detection model. But, depending on the data used for inference, better speed/performance could be achived by directly passing the original images to the Clothing Detection model.
 
-![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/demo.gif)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/demo.gif)
 
 * [Run with or without Docker](#run)
 * Clothing Detection
@@ -76,12 +76,12 @@ names: ['short sleeve top', 'long sleeve top', 'short sleeve outwear', 'long sle
 'vest', 'sling', 'shorts', 'trousers', 'skirt', 'short sleeve dress', 'long sleeve dress',
 'vest dress', 'sling dress']
 ```
-Secondly, the labels need to be converted into YOLO format. You can do so with [this piece of code](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_yolo.py).
+Secondly, the labels need to be converted into YOLO format. You can do so with [this piece of code](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_yolo.py).
 
 Make sure to organise the directories in such way that the train and validation directories will each contain 2 directories called images and labels.
 
 Then, you will have to choose a model to start training from. In my case, I went with the YOLOv5x configuration. 
-As for the hyperparameters, they can be found [here](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/hyp.yaml).
+As for the hyperparameters, they can be found [here](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/hyp.yaml).
 
 Finally, I started training for 100 epochs with a batch size of 64 using the following command:
 ```
@@ -93,37 +93,37 @@ Now, let's take a look at how the model performed:
 
 Results summary:
 
-![Results](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/results.png?raw=true)
+![Results](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/results.png?raw=true)
 Precision is defined as the number of true positives over the number of true positives plus the number of false positives.
 Recall is defined as the number of true positives over the number of true positives plus the number of false negatives.
 
 Confusion matrix:
-![Conf matrix](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/confusion_matrix.png?raw=true)
+![Conf matrix](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/confusion_matrix.png?raw=true)
 
 Precision-Recall curve:
 The precision-recall curve shows the tradeoff between precision and recall. A high area under the curve represents both high recall and high precision, where high precision relates to a low false positive rate, and high recall relates to a low false negative rate. High scores for both show that the classifier is returning accurate results (high precision), as well as returning a majority of all positive results (high recall).
-![PR curve](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/PR_curve.png?raw=true)
+![PR curve](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/PR_curve.png?raw=true)
 
 F1 curve:
 Simply put, the F1 score combines precision and recall into one metric by calculating the harmonic mean between those two.
-![F1 curve](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/F1_curve.png?raw=true)
+![F1 curve](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/F1_curve.png?raw=true)
 
-The saved model can be found [here](https://github.com/cosminbvb/Clothing-Recognition/tree/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/weights).
+The saved model can be found [here](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/tree/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/yolov5/weights).
 
 <a name="ap2"/>
 
 ### Instance Segmentation (Mask RCNN) with Detectron2
 
-First of all, in order to train on a custom dataset, we'll need to register the dataset. The easiest way to do so, in my opinion, is to [convert the dataset into **coco** format](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_coco.py) and then just run the ```register_coco_instances``` function they provide, passing the json and images directory paths as arguments.
+First of all, in order to train on a custom dataset, we'll need to register the dataset. The easiest way to do so, in my opinion, is to [convert the dataset into **coco** format](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_coco.py) and then just run the ```register_coco_instances``` function they provide, passing the json and images directory paths as arguments.
 
 Next, we need to define the configuration. Here, I chose the mask_rcnn_R_101_FPN_3x model configuration, 16 images per batch, 0.001 learning rate and 30k max interations.
 
 Here is how the model performed while training:
 
-![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/fast_rcnn_accuracy.png)
-![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/mask_rcnn_accuracy.png)
-![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_mask.png)
-![](https://github.com/cosminbvb/Clothing-Person-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_cls.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/fast_rcnn_accuracy.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/mask_rcnn_accuracy.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_mask.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/loss_cls.png)
 
 Even though the above metrics look promising, while evaluating, we get the following results:
 
@@ -193,5 +193,5 @@ For this task I finetuned a Faster RCNN ResNet50 FPN model pretrained on COCO, u
 - Used a LR Scheduler: StepLR  
 
 ### Metrics
-![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/ap.png)
-![](https://github.com/cosminbvb/Clothing-Recognition/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/loss_lr.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/ap.png)
+![](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/loss_lr.png)
