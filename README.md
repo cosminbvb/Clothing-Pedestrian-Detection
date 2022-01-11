@@ -112,7 +112,7 @@ The saved model can be found [here](https://github.com/cosminbvb/Clothing-Pedest
 
 <a name="ap2"/>
 
-### Instance Segmentation (Mask RCNN) with Detectron2
+### Semantic Segmentation (Mask RCNN) with Detectron2
 
 First of all, in order to train on a custom dataset, we'll need to register the dataset. The easiest way to do so, in my opinion, is to [convert the dataset into **coco** format](https://github.com/cosminbvb/Clothing-Pedestrian-Detection/blob/main/Clothing%20Detection%20and%20Classification/deepfashion2_to_coco.py) and then just run the ```register_coco_instances``` function they provide, passing the json and images directory paths as arguments.
 
