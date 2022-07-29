@@ -69,7 +69,7 @@ def home():
             result_images = people + clothing
 
             return_dict = {}
-            return_dict['status'] = len(result_images)  # nr of images to send 
+            return_dict['status'] = len(result_images)  # nr of images to send
             for i, image in enumerate(result_images):
                 img = Image.fromarray(image.astype('uint8')).convert('RGB')
                 # img.save(os.path.join(app.config['UPLOAD_FOLDER'], f'person_pil_{i}.jpg'))
@@ -86,7 +86,7 @@ def home():
             return redirect(request.url)
     else:
         return render_template('index.html')
-        
+
 
 def detect_people(image):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -99,19 +99,20 @@ def detect_people(image):
 
     image = preprocess(image)
 
-    model = torch.load('../Clothing Detection and Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/100epochs.pt')
-    
+    model = torch.load('../Clothing Detection and Classification/SavedRuns/PersonDetection/pytorch_faster_rcnn/100epochs.pt',
+                       map_location=device)
+
     model.to(device)
     model.eval()
-   
+
     with torch.no_grad():
         prediction = model([image.to(device)])
     boxes = prediction[0]["boxes"]
     scores = prediction[0]["scores"]
-    keep = torchvision.ops.nms(boxes, scores, 0.5) 
+    keep = torchvision.ops.nms(boxes, scores, 0.5)
     boxes = boxes.tolist()
     scores = scores.tolist()
-    
+
     threshold = 0.6
     final_boxes = []
     final_scores = []
@@ -126,7 +127,7 @@ def detect_people(image):
             x1, y1, x2, y2 = map(int, boxes[i])
             cropped = image_copy[y1:y2, x1:x2]
             people.append(cropped)
-    
+
     print(final_boxes)
     print(final_scores)
 
@@ -146,22 +147,22 @@ def detect_clothing_yolo(people):
     results = model(imgs, size=640)
     results.render()
     return results.imgs
-    
+
 
 def detect_clothing_detectron2(people):
     output_images = []
     cfg = get_cfg()
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 13
     cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
-    cfg.MODEL.WEIGHTS = '../Clothing Detection and Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/model_final.pth'  
+    cfg.MODEL.WEIGHTS = '../Clothing Detection and Classification/SavedRuns/ClothingDetection/detectron2_maskrcnn/model_final.pth'
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.65  # set a custom testing threshold
     predictor = DefaultPredictor(cfg)
     my_dataset_val_metadata = MetadataCatalog.get("DeepFashion2_valid")
     for i, person in enumerate(people):
         outputs = predictor(person)  # format is documented at https://detectron2.readthedocs.io/tutorials/models.html#model-output-format
         v = Visualizer(person[:, :, ::-1],
-                    metadata=my_dataset_val_metadata, 
-                    scale=1, 
+                    metadata=my_dataset_val_metadata,
+                    scale=1,
                     instance_mode=ColorMode.IMAGE_BW   # remove the colors of unsegmented pixels. This option is only available for segmentation models
         )
         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
